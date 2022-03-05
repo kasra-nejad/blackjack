@@ -1,9 +1,14 @@
-import React from 'react';
+import React from "react";
+import Totals from "./Totals";
 
-interface Props {};
+interface Props {}
 
 const Player = (props: Props) => {
-  return <div></div>;
+  return (
+    <div>
+      <Totals />
+    </div>
+  );
 };
 
 export default Player;
