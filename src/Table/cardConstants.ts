@@ -59,3 +59,8 @@ export const deckOfCards = [
   { id: `12-${cardTypes.club}-1`, type: cardTypes.club, value: 10 },
   { id: `13-${cardTypes.club}-1`, type: cardTypes.club, value: 10 },
 ];
+
+export const participants = {
+  PLAYER_1: "Player 1",
+  DEALER: "Dealer",
+};

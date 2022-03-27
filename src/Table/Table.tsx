@@ -3,10 +3,9 @@ import styled from "styled-components";
 import PlayerButtons from "../Buttons/PlayerButtons";
 import Dealer from "../Participants/Dealer";
 import Player from "../Participants/Player";
-import { deckOfCards } from "./cardConstants";
+import { deckOfCards, participants } from "./cardConstants";
 
-interface Props {}
-type CurrentCard = { id: string; type: string; value: number } | null;
+export type CurrentCard = { id: string; type: string; value: number } | null;
 
 const PlayArea = styled.div`
   background-color: green;
@@ -14,23 +13,41 @@ const PlayArea = styled.div`
   height: 500px;
 `;
 
-const Table = (props: Props) => {
+const Table: React.FC = () => {
+  const [isInitialDeal, setIsInitialDeal] = useState(true);
   const [dealerDeck, setDealerDeck] = useState(deckOfCards);
-  const [turn, setTurn] = useState(null);
+  const [turn, setTurn] = useState<string>(Object.keys(participants)[0]);
   const [currentCard, setCurrentCard] = useState<CurrentCard>(null);
+  const [hands, setHands] = useState<{ [key: string]: CurrentCard[] }>({
+    [participants.PLAYER_1]: [],
+    [participants.DEALER]: [],
+  });
 
-  const drawCard = () => {
+  const toggleTurn = () => {
+    if (turn === participants.PLAYER_1) {
+      setTurn(participants.DEALER);
+      return;
+    }
+    setTurn(participants.PLAYER_1);
+  };
+
+  const drawCard = (participant: string) => {
     const randomCardIndex = Math.floor(Math.random() * dealerDeck.length);
-    const currentCard = setCurrentCard(dealerDeck[randomCardIndex]);
-    console.log(dealerDeck.filter((_, index) => index !== randomCardIndex));
+    setCurrentCard(dealerDeck[randomCardIndex]);
+    setHands({ ...hands, [participant]: [...hands[participant], currentCard] });
     setDealerDeck(dealerDeck.filter((_, index) => index !== randomCardIndex));
+  };
+
+  const start = () => {
+    Object.keys(participants).forEach((participant) => drawCard(participant));
+    setIsInitialDeal(false);
   };
 
   return (
     <PlayArea>
-      <Dealer />
-      <Player />
-      <PlayerButtons drawCard={drawCard} />
+      <Dealer hand={hands[participants.DEALER]} />
+      <Player hand={hands[participants.PLAYER_1]} />
+      <PlayerButtons drawCard={drawCard} turn={turn} />
     </PlayArea>
   );
 };
