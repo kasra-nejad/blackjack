@@ -16,7 +16,7 @@ const PlayArea = styled.div`
 const Table: React.FC = () => {
   const [isInitialDeal, setIsInitialDeal] = useState(true);
   const [dealerDeck, setDealerDeck] = useState(deckOfCards);
-  const [turn, setTurn] = useState<string>(Object.keys(participants)[0]);
+  const [turn, setTurn] = useState<string>(participants.PLAYER_1);
   const [currentCard, setCurrentCard] = useState<CurrentCard>(null);
   const [hands, setHands] = useState<{ [key: string]: CurrentCard[] }>({
     [participants.PLAYER_1]: [],
@@ -34,12 +34,27 @@ const Table: React.FC = () => {
   const drawCard = (participant: string) => {
     const randomCardIndex = Math.floor(Math.random() * dealerDeck.length);
     setCurrentCard(dealerDeck[randomCardIndex]);
-    setHands({ ...hands, [participant]: [...hands[participant], currentCard] });
+    setHands(
+      Object.assign(hands, {
+        [participant]: [...hands[participant], dealerDeck[randomCardIndex]],
+      })
+    );
     setDealerDeck(dealerDeck.filter((_, index) => index !== randomCardIndex));
   };
 
   const start = () => {
-    Object.keys(participants).forEach((participant) => drawCard(participant));
+    Array(2)
+      .fill(
+        Object.values(participants).copyWithin(
+          Object.values(participants).length,
+          0
+        )
+      )
+      .flat()
+      .forEach((participant: string) => {
+        drawCard(participant);
+        toggleTurn();
+      });
     setIsInitialDeal(false);
   };
 
@@ -47,7 +62,12 @@ const Table: React.FC = () => {
     <PlayArea>
       <Dealer hand={hands[participants.DEALER]} />
       <Player hand={hands[participants.PLAYER_1]} />
-      <PlayerButtons drawCard={drawCard} turn={turn} />
+      <PlayerButtons
+        drawCard={drawCard}
+        start={start}
+        turn={turn}
+        isInitialDeal={isInitialDeal}
+      />
     </PlayArea>
   );
 };

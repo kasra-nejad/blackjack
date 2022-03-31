@@ -2,11 +2,13 @@ import React, { useState } from "react";
 
 export interface IPlayerButtonsProps {
   drawCard: (participant: string) => void;
+  start: () => void;
   turn: string;
+  isInitialDeal: boolean;
 }
 
 const PlayerButtons: React.FC<IPlayerButtonsProps> = (props) => {
-  const { drawCard, turn } = props;
+  const { drawCard, turn, start, isInitialDeal } = props;
   const [isDoubleDisabled, setIsDoubleDisabled] = useState(false);
   const [isSplitDisabled, setISSplitDisabled] = useState(false);
   return (
@@ -22,6 +24,14 @@ const PlayerButtons: React.FC<IPlayerButtonsProps> = (props) => {
       </button>
       <button className="button" disabled={isSplitDisabled} name="split">
         split
+      </button>
+      <button
+        className="button"
+        disabled={!isInitialDeal}
+        name="start"
+        onClick={start}
+      >
+        start
       </button>
     </div>
   );
