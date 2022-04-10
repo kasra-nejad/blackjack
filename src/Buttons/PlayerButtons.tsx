@@ -4,11 +4,11 @@ export interface IPlayerButtonsProps {
   drawCard: (participant: string) => void;
   start: () => void;
   turn: string;
-  isInitialDeal: boolean;
+  isGameStarted: boolean;
 }
 
 const PlayerButtons: React.FC<IPlayerButtonsProps> = (props) => {
-  const { drawCard, turn, start, isInitialDeal } = props;
+  const { drawCard, turn, start, isGameStarted } = props;
   const [isDoubleDisabled, setIsDoubleDisabled] = useState(false);
   const [isSplitDisabled, setISSplitDisabled] = useState(false);
   return (
@@ -27,7 +27,7 @@ const PlayerButtons: React.FC<IPlayerButtonsProps> = (props) => {
       </button>
       <button
         className="button"
-        disabled={!isInitialDeal}
+        disabled={isGameStarted}
         name="start"
         onClick={start}
       >

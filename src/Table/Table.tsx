@@ -1,11 +1,24 @@
-import React, { useEffect, useState } from "react";
+import React, {
+  useState,
+  useContext,
+  createContext,
+  Dispatch,
+  ReducerAction,
+  useReducer,
+} from "react";
 import styled from "styled-components";
 import PlayerButtons from "../Buttons/PlayerButtons";
 import Dealer from "../Participants/Dealer";
 import Player from "../Participants/Player";
 import { deckOfCards, participants } from "./cardConstants";
 
-export type CurrentCard = { id: string; type: string; value: number } | null;
+export type Card = {
+  id: string;
+  type: string;
+  value: number;
+  deckNumber: number;
+};
+export type CurrentCard = Card | null;
 
 const PlayArea = styled.div`
   background-color: green;
@@ -13,16 +26,55 @@ const PlayArea = styled.div`
   height: 500px;
 `;
 
+type GameState = {
+  isGameStarted: boolean;
+  dealerDeck: Card[];
+  turn: string;
+  hands: { [key: string]: CurrentCard[] };
+};
+
+type GameActions = {
+  type: string;
+  payload?: unknown;
+};
+
 const Table: React.FC = () => {
-  const [isInitialDeal, setIsInitialDeal] = useState(true);
+  const GameContext = createContext({});
+  const initialState: GameState = {
+    isGameStarted: false,
+    dealerDeck: deckOfCards,
+    turn: participants.PLAYER_1,
+    hands: {
+      [participants.PLAYER_1]: [],
+      [participants.DEALER]: [],
+    },
+  };
+
+  const TOGGLE_TURN = "TOGGLE_TURN";
+
+  function gameReducer(state: GameState, action: GameActions): GameState {
+    switch (action.type) {
+      case TOGGLE_TURN:
+        return {
+          ...initialState,
+          turn: Object.values(participants).find(
+            (participant) => participant !== state.turn
+          )!,
+        };
+      default:
+        return state;
+    }
+  }
+
+  const [gameState, dispatch] = useReducer(gameReducer, initialState);
+
+  const [isGameStarted, setIsGameStarted] = useState(false);
   const [dealerDeck, setDealerDeck] = useState(deckOfCards);
   const [turn, setTurn] = useState<string>(participants.PLAYER_1);
-  const [currentCard, setCurrentCard] = useState<CurrentCard>(null);
   const [hands, setHands] = useState<{ [key: string]: CurrentCard[] }>({
     [participants.PLAYER_1]: [],
     [participants.DEALER]: [],
   });
-
   const toggleTurn = () => {
     if (turn === participants.PLAYER_1) {
       setTurn(participants.DEALER);
@@ -33,7 +85,6 @@ const Table: React.FC = () => {
 
   const drawCard = (participant: string) => {
     const randomCardIndex = Math.floor(Math.random() * dealerDeck.length);
-    setCurrentCard(dealerDeck[randomCardIndex]);
     setHands(
       Object.assign(hands, {
         [participant]: [...hands[participant], dealerDeck[randomCardIndex]],
@@ -55,20 +106,28 @@ const Table: React.FC = () => {
         drawCard(participant);
         toggleTurn();
       });
-    setIsInitialDeal(false);
+    setIsGameStarted(true);
+    setTurn(participants.PLAYER_1);
   };
 
   return (
-    <PlayArea>
-      <Dealer hand={hands[participants.DEALER]} />
-      <Player hand={hands[participants.PLAYER_1]} />
-      <PlayerButtons
-        drawCard={drawCard}
-        start={start}
-        turn={turn}
-        isInitialDeal={isInitialDeal}
-      />
-    </PlayArea>
+    <GameContext.Provider>
+      <PlayArea>
+        <Dealer
+          hand={hands[participants.DEALER]}
+          isGameStarted={isGameStarted}
+          turn={turn}
+          drawCard={drawCard}
+        />
+        <Player hand={hands[participants.PLAYER_1]} />
+        <PlayerButtons
+          drawCard={drawCard}
+          start={start}
+          turn={turn}
+          isGameStarted={isGameStarted}
+        />
+      </PlayArea>
+    </GameContext.Provider>
   );
 };
 
