@@ -1,15 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect } from "react";
 import styled from "styled-components";
 import Card from "../Table/Card";
 import { participants } from "../Table/cardConstants";
-import { CurrentCard } from "../Table/Table";
+import { CurrentCard, GameContext } from "../Table/Table";
 import Totals from "./Totals";
 import { useGetParticipantTotal } from "./utils";
 
 type Props = {
-  hand: CurrentCard[];
-  isGameStarted: boolean;
-  turn: string;
   drawCard: (participant: string) => void;
 };
 
@@ -20,11 +17,14 @@ const DealerArea = styled.div`
 `;
 
 const Dealer = (props: Props) => {
-  const { hand, isGameStarted, turn, drawCard } = props;
-  const total = useGetParticipantTotal(hand);
+  const { drawCard } = props;
+  const context = useContext(GameContext);
+  const { turn, isGameStarted, hands } = context.state;
+  const dealerHand = hands[participants.DEALER];
+  const total = useGetParticipantTotal(dealerHand);
 
   useEffect(() => {
-    const dealerTotal = hand.reduce((a, b) => {
+    const dealerTotal = dealerHand.reduce((a, b) => {
       if (b) {
         return a + b?.value;
       }
@@ -33,14 +33,14 @@ const Dealer = (props: Props) => {
     if (turn === participants.DEALER && isGameStarted && dealerTotal < 17) {
       drawCard(turn);
     }
-  }, [turn, isGameStarted]);
+  }, [turn, isGameStarted, dealerHand, drawCard]);
 
   return (
     <DealerArea>
       {turn !== participants.DEALER && isGameStarted ? (
-        <Card key={hand[0]?.id} value={hand[0]?.id} />
+        <Card key={dealerHand[0]?.id} value={dealerHand[0]?.id} />
       ) : (
-        hand.map((card: CurrentCard) => {
+        dealerHand.map((card: CurrentCard) => {
           return <Card key={card?.id} value={card?.id} />;
         })
       )}

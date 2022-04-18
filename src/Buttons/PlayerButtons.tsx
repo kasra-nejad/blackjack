@@ -1,14 +1,15 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
+import { GameContext } from "../Table/Table";
 
 export interface IPlayerButtonsProps {
   drawCard: (participant: string) => void;
   start: () => void;
-  turn: string;
-  isGameStarted: boolean;
 }
 
 const PlayerButtons: React.FC<IPlayerButtonsProps> = (props) => {
-  const { drawCard, turn, start, isGameStarted } = props;
+  const { drawCard, start } = props;
+  const context = useContext(GameContext);
+  const { turn, isGameStarted } = context.state;
   const [isDoubleDisabled, setIsDoubleDisabled] = useState(false);
   const [isSplitDisabled, setISSplitDisabled] = useState(false);
   return (

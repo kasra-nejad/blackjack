@@ -1,13 +1,10 @@
-import React from "react";
+import React, { useContext } from "react";
 import Totals from "./Totals";
-import { CurrentCard } from "../Table/Table";
+import { CurrentCard, GameContext } from "../Table/Table";
 import { useGetParticipantTotal } from "./utils";
 import Card from "../Table/Card";
 import styled from "styled-components";
-
-type Props = {
-  hand: CurrentCard[];
-};
+import { participants } from "../Table/cardConstants";
 
 const PlayerArea = styled.div`
   width: 200px;
@@ -15,14 +12,16 @@ const PlayerArea = styled.div`
   display: flex;
 `;
 
-const Player = (props: Props) => {
-  const { hand } = props;
-  const total = useGetParticipantTotal(hand);
-  console.log(hand);
+const Player = () => {
+  const context = useContext(GameContext);
+  const { hands } = context.state;
+  const playerHand = hands[participants.PLAYER_1];
+  const total = useGetParticipantTotal(playerHand);
+
   return (
     <PlayerArea>
-      {hand.map((card: CurrentCard) => {
-        return <Card value={card?.id} />;
+      {playerHand.map((card: CurrentCard) => {
+        return <Card value={card?.id} key={card?.id} />;
       })}
       <Totals total={total} />
     </PlayerArea>

@@ -1,11 +1,4 @@
-import React, {
-  useState,
-  useContext,
-  createContext,
-  Dispatch,
-  ReducerAction,
-  useReducer,
-} from "react";
+import React, { createContext, useReducer } from "react";
 import styled from "styled-components";
 import PlayerButtons from "../Buttons/PlayerButtons";
 import Dealer from "../Participants/Dealer";
@@ -26,6 +19,11 @@ const PlayArea = styled.div`
   height: 500px;
 `;
 
+type GameContextType = {
+  state: GameState;
+  dispatch: React.Dispatch<GameActions>;
+};
+
 type GameState = {
   isGameStarted: boolean;
   dealerDeck: Card[];
@@ -35,11 +33,11 @@ type GameState = {
 
 type GameActions = {
   type: string;
-  payload?: unknown;
+  payload?: any;
 };
+export const GameContext = createContext({} as GameContextType);
 
 const Table: React.FC = () => {
-  const GameContext = createContext({});
   const initialState: GameState = {
     isGameStarted: false,
     dealerDeck: deckOfCards,
@@ -50,17 +48,61 @@ const Table: React.FC = () => {
     },
   };
 
-  const TOGGLE_TURN = "TOGGLE_TURN";
+  const SET_TURN = "SET_TURN";
+  const START_GAME = "START_GAME";
+  const SET_HANDS = "SET_HANDS";
+  const SET_DEALER_DECK = "SET_DEALER_DECK";
+
+  const setTurn = (payload: string) => ({
+    type: SET_TURN,
+    payload,
+  });
+
+  const startGame = (payload: boolean) => ({
+    type: START_GAME,
+    payload,
+  });
+
+  const setHands = (payload: { participant: string; cardIndex: number }) => ({
+    type: SET_HANDS,
+    payload,
+  });
+
+  const setDealerDeck = (payload: number) => ({
+    type: SET_DEALER_DECK,
+    payload,
+  });
 
   function gameReducer(state: GameState, action: GameActions): GameState {
-    switch (action.type) {
-      case TOGGLE_TURN:
+    const { type, payload } = action;
+    switch (type) {
+      case SET_TURN:
         return {
-          ...initialState,
-          turn: Object.values(participants).find(
-            (participant) => participant !== state.turn
-          )!,
+          ...state,
+          turn: payload,
         };
+      case START_GAME:
+        return {
+          ...state,
+          isGameStarted: payload,
+        };
+      case SET_HANDS:
+        return {
+          ...state,
+          hands: {
+            ...state.hands,
+            [payload.participant]: [
+              ...state.hands[payload.participant],
+              state.dealerDeck[payload.cardIndex],
+            ],
+          },
+        };
+      case SET_DEALER_DECK:
+        return {
+          ...state,
+          dealerDeck: state.dealerDeck.filter((_, index) => index !== payload),
+        };
+
       default:
         return state;
     }
@@ -68,29 +110,22 @@ const Table: React.FC = () => {
 
   const [gameState, dispatch] = useReducer(gameReducer, initialState);
 
-  const [isGameStarted, setIsGameStarted] = useState(false);
-  const [dealerDeck, setDealerDeck] = useState(deckOfCards);
-  const [turn, setTurn] = useState<string>(participants.PLAYER_1);
-  const [hands, setHands] = useState<{ [key: string]: CurrentCard[] }>({
-    [participants.PLAYER_1]: [],
-    [participants.DEALER]: [],
-  });
   const toggleTurn = () => {
-    if (turn === participants.PLAYER_1) {
-      setTurn(participants.DEALER);
+    if (gameState.turn === participants.PLAYER_1) {
+      dispatch(setTurn(participants.DEALER));
       return;
     }
-    setTurn(participants.PLAYER_1);
+    dispatch(setTurn(participants.PLAYER_1));
   };
 
   const drawCard = (participant: string) => {
-    const randomCardIndex = Math.floor(Math.random() * dealerDeck.length);
-    setHands(
-      Object.assign(hands, {
-        [participant]: [...hands[participant], dealerDeck[randomCardIndex]],
-      })
+    const randomCardIndex = Math.floor(
+      Math.random() * gameState.dealerDeck.length
     );
-    setDealerDeck(dealerDeck.filter((_, index) => index !== randomCardIndex));
+    dispatch(
+      setHands({ participant: participant, cardIndex: randomCardIndex })
+    );
+    dispatch(setDealerDeck(randomCardIndex));
   };
 
   const start = () => {
@@ -106,26 +141,15 @@ const Table: React.FC = () => {
         drawCard(participant);
         toggleTurn();
       });
-    setIsGameStarted(true);
-    setTurn(participants.PLAYER_1);
+    dispatch(startGame(true));
+    dispatch(setTurn(participants.PLAYER_1));
   };
-
   return (
-    <GameContext.Provider>
+    <GameContext.Provider value={{ state: gameState, dispatch }}>
       <PlayArea>
-        <Dealer
-          hand={hands[participants.DEALER]}
-          isGameStarted={isGameStarted}
-          turn={turn}
-          drawCard={drawCard}
-        />
-        <Player hand={hands[participants.PLAYER_1]} />
-        <PlayerButtons
-          drawCard={drawCard}
-          start={start}
-          turn={turn}
-          isGameStarted={isGameStarted}
-        />
+        <Dealer drawCard={drawCard} />
+        <Player />
+        <PlayerButtons drawCard={drawCard} start={start} />
       </PlayArea>
     </GameContext.Provider>
   );
