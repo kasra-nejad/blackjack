@@ -6,7 +6,7 @@ import Card from "../Table/Card";
 import styled from "styled-components";
 import { participants } from "../Table/cardConstants";
 import { GameContext } from "../Table/gameContext";
-import { setTurn } from "../Table/gameActions";
+import { endGame, setTurn } from "../Table/gameActions";
 
 const PlayerArea = styled.div`
   width: 200px;
@@ -23,6 +23,7 @@ const Player = () => {
 
   useEffect(() => {
     if (total >= 21) {
+      dispatch(endGame());
       dispatch(setTurn(participants.DEALER));
     }
   }, [dispatch, total]);

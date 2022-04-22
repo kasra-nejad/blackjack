@@ -1,5 +1,6 @@
 import { deckOfCards, participants } from "./cardConstants";
 import {
+  END_GAME,
   GameActions,
   SET_DEALER_DECK,
   SET_HANDS,
@@ -10,6 +11,7 @@ import { Card, CurrentCard } from "./Table";
 
 export type GameState = {
   isGameStarted: boolean;
+  hasGameEnded: boolean;
   dealerDeck: Card[];
   turn: string;
   hands: { [key: string]: CurrentCard[] };
@@ -17,6 +19,7 @@ export type GameState = {
 
 export const initialState: GameState = {
   isGameStarted: false,
+  hasGameEnded: false,
   dealerDeck: deckOfCards,
   turn: participants.PLAYER_1,
   hands: {
@@ -29,7 +32,6 @@ export function gameReducer(state: GameState, action: GameActions): GameState {
   const { type, payload } = action;
   switch (type) {
     case SET_TURN:
-      console.log(payload);
       return {
         ...state,
         turn: payload,
@@ -37,7 +39,14 @@ export function gameReducer(state: GameState, action: GameActions): GameState {
     case START_GAME:
       return {
         ...state,
-        isGameStarted: payload,
+        isGameStarted: true,
+        turn: initialState.turn,
+        hands: initialState.hands,
+      };
+    case END_GAME:
+      return {
+        ...state,
+        isGameStarted: false,
       };
     case SET_HANDS:
       return {

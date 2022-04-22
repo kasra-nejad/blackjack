@@ -44,6 +44,7 @@ const PlayerButtons: React.FC<IPlayerButtonsProps> = (props) => {
       >
         double
       </button>
+      {/*TODO implement split*/}
       <button className="button" disabled={isSplitDisabled} name="split">
         split
       </button>

@@ -1,5 +1,6 @@
 export const SET_TURN = "SET_TURN";
 export const START_GAME = "START_GAME";
+export const END_GAME = "END_GAME";
 export const SET_HANDS = "SET_HANDS";
 export const SET_DEALER_DECK = "SET_DEALER_DECK";
 
@@ -8,9 +9,12 @@ export const setTurn = (payload: string) => ({
   payload,
 });
 
-export const startGame = (payload: boolean) => ({
+export const startGame = () => ({
   type: START_GAME,
-  payload,
+});
+
+export const endGame = () => ({
+  type: END_GAME,
 });
 
 export const setHands = (payload: {

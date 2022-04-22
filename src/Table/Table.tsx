@@ -35,7 +35,7 @@ const Table: React.FC = () => {
 
   const drawCard = (participant: string) => {
     const randomCardIndex = Math.floor(
-      Math.random() * gameState.dealerDeck.length
+      Math.random() * (gameState.dealerDeck.length - 1)
     );
     dispatch(
       setHands({ participant: participant, cardIndex: randomCardIndex })
@@ -44,6 +44,7 @@ const Table: React.FC = () => {
   };
 
   const start = () => {
+    dispatch(startGame());
     Array(2)
       .fill(
         Object.values(participants).copyWithin(
@@ -56,7 +57,6 @@ const Table: React.FC = () => {
         drawCard(participant);
         toggleTurn();
       });
-    dispatch(startGame(true));
     dispatch(setTurn(participants.PLAYER_1));
   };
 
