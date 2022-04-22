@@ -1,10 +1,12 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import Totals from "./Totals";
-import { CurrentCard, GameContext } from "../Table/Table";
+import { CurrentCard } from "../Table/Table";
 import { useGetParticipantTotal } from "./utils";
 import Card from "../Table/Card";
 import styled from "styled-components";
 import { participants } from "../Table/cardConstants";
+import { GameContext } from "../Table/gameContext";
+import { setTurn } from "../Table/gameActions";
 
 const PlayerArea = styled.div`
   width: 200px;
@@ -14,9 +16,16 @@ const PlayerArea = styled.div`
 
 const Player = () => {
   const context = useContext(GameContext);
+  const dispatch = context.dispatch;
   const { hands } = context.state;
   const playerHand = hands[participants.PLAYER_1];
   const total = useGetParticipantTotal(playerHand);
+
+  useEffect(() => {
+    if (total >= 21) {
+      dispatch(setTurn(participants.DEALER));
+    }
+  }, [dispatch, total]);
 
   return (
     <PlayerArea>

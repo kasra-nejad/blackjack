@@ -2,7 +2,8 @@ import React, { useContext, useEffect } from "react";
 import styled from "styled-components";
 import Card from "../Table/Card";
 import { participants } from "../Table/cardConstants";
-import { CurrentCard, GameContext } from "../Table/Table";
+import { GameContext } from "../Table/gameContext";
+import { CurrentCard } from "../Table/Table";
 import Totals from "./Totals";
 import { useGetParticipantTotal } from "./utils";
 
@@ -44,7 +45,13 @@ const Dealer = (props: Props) => {
           return <Card key={card?.id} value={card?.id} />;
         })
       )}
-      <Totals total={total} />
+      <Totals
+        total={
+          turn !== participants.DEALER && isGameStarted
+            ? total - dealerHand[1]?.value!
+            : total
+        }
+      />
     </DealerArea>
   );
 };

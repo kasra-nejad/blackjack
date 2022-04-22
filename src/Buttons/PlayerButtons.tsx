@@ -1,26 +1,47 @@
-import React, { useContext, useState } from "react";
-import { GameContext } from "../Table/Table";
+import React, { useContext } from "react";
+import { participants } from "../Table/cardConstants";
+import { setTurn } from "../Table/gameActions";
+import { GameContext } from "../Table/gameContext";
 
 export interface IPlayerButtonsProps {
   drawCard: (participant: string) => void;
   start: () => void;
+  double: () => void;
 }
 
 const PlayerButtons: React.FC<IPlayerButtonsProps> = (props) => {
-  const { drawCard, start } = props;
+  const { drawCard, start, double } = props;
   const context = useContext(GameContext);
-  const { turn, isGameStarted } = context.state;
-  const [isDoubleDisabled, setIsDoubleDisabled] = useState(false);
-  const [isSplitDisabled, setISSplitDisabled] = useState(false);
+  const dispatch = context.dispatch;
+  const { turn, isGameStarted, hands } = context.state;
+  const isDoubleDisabled = !isGameStarted || hands[turn].length !== 2;
+  const isSplitDisabled =
+    !isGameStarted || hands[turn][0]?.value !== hands[turn][1]?.value;
+
   return (
     <div id="button-container" style={{ display: "flex" }}>
-      <button className="button" name="hit" onClick={() => drawCard(turn)}>
+      <button
+        className="button"
+        name="hit"
+        disabled={turn === participants.DEALER || !isGameStarted}
+        onClick={() => drawCard(turn)}
+      >
         hit
       </button>
-      <button className="button" name="stand">
+      <button
+        className="button"
+        name="stand"
+        onClick={() => dispatch(setTurn(participants.DEALER))}
+        disabled={turn === participants.DEALER || !isGameStarted}
+      >
         stand
       </button>
-      <button className="button" disabled={isDoubleDisabled} name="double">
+      <button
+        className="button"
+        disabled={isDoubleDisabled}
+        name="double"
+        onClick={double}
+      >
         double
       </button>
       <button className="button" disabled={isSplitDisabled} name="split">
